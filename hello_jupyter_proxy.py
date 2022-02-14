@@ -58,6 +58,7 @@ def main():
     ap.add_argument('port', type=int)
     args = ap.parse_args()
 
+    # 127.0.0.1 = localhost: only accept connections from the same machine
     httpd = HTTPServer(('127.0.0.1', args.port), RequestHandler)
     print("Launching example HTTP server")
     httpd.serve_forever()

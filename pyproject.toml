@@ -5,6 +5,7 @@ build-backend = "flit_core.buildapi"
 [project]
 name = "hello_jupyter_proxy"
 authors = [{name = "Thomas Kluyver", email = "thomas@kluyver.me.uk"}]
+readme = "README.rst"
 license = {file = "LICENSE"}
 classifiers = ["License :: OSI Approved :: MIT License"]
 dependencies = ["jupyter-server-proxy"]
