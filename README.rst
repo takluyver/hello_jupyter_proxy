@@ -37,7 +37,7 @@ You might want to consider:
   accessing another user's server is not too dangerous.
 - Listening only on localhost (as in this example), to limit access to only
   users who can log into the same machine.
-- Find some way to verify that the user sending the request matches the user
+- Finding some way to verify that the user sending the request matches the user
   which the application is running as.
 
 Which measures make sense will depend on your application and the environment
