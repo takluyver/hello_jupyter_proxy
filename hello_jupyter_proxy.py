@@ -2,6 +2,7 @@
 """
 import argparse
 import sys
+from copy import copy
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 __version__ = '0.1'
@@ -22,16 +23,26 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(
-            TEMPLATE.format(path=self.path, headers=self.headers).encode('utf-8')
-        )
+        self.wfile.write(TEMPLATE.format(
+            path=self.path, headers=self._headers_hide_cookie()
+        ).encode('utf-8'))
+
+    def _headers_hide_cookie(self):
+        # Not sure if there's any security risk in showing the Cookie value,
+        # but better safe than sorry. You can inspect cookie values in the
+        # browser.
+        res = copy(self.headers)
+        if 'Cookie' in self.headers:
+            del res['Cookie']
+            res['Cookie'] = '(hidden)'
+        return res
 
 
 TEMPLATE = """\
 <!DOCTYPE html>
 <html>
 <head>
-<title>HTML 5 Boilerplate</title>
+<title>Hello Jupyter-server-proxy</title>
 </head>
 <body>
 <h1>Hello Jupyter-server-proxy</h1>
