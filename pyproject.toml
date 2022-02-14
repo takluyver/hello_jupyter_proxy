@@ -1,0 +1,17 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "hello_jupyter_proxy"
+authors = [{name = "Thomas Kluyver", email = "thomas@kluyver.me.uk"}]
+license = {file = "LICENSE"}
+classifiers = ["License :: OSI Approved :: MIT License"]
+dependencies = ["jupyter-server-proxy"]
+dynamic = ["version", "description"]
+
+[project.urls]
+Home = "https://github.com/takluyver/hello_jupyter_proxy"
+
+[project.entry-points.jupyter_serverproxy_servers]
+hello = "hello_jupyter_proxy:setup_hello"
