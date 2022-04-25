@@ -13,7 +13,8 @@ __version__ = '0.1'
 # https://jupyter-server-proxy.readthedocs.io/en/latest/server-process.html
 def setup_hello():
     return {
-        'command': [sys.executable, '-m', 'hello_jupyter_proxy', '{port}']
+        'command': [sys.executable, '-m', 'hello_jupyter_proxy', '{port}'],
+        'unix': True,
     }
 
 # Define a web application to proxy.
