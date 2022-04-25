@@ -1,6 +1,7 @@
 """A minimal example server to run with jupyter-server-proxy
 """
 import argparse
+import socket
 import sys
 from copy import copy
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -53,13 +54,19 @@ TEMPLATE = """\
 </html>
 """
 
+class HTTPUnixServer(HTTPServer):
+    address_family = socket.AF_UNIX
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('port', type=int)
+    ap.add_argument('port')
     args = ap.parse_args()
 
     # 127.0.0.1 = localhost: only accept connections from the same machine
-    httpd = HTTPServer(('127.0.0.1', args.port), RequestHandler)
+    if args.port.isdigit():
+        httpd = HTTPServer(('127.0.0.1', int(args.port)), RequestHandler)
+    else:
+        httpd = HTTPUnixServer(args.port, RequestHandler)
     print("Launching example HTTP server")
     httpd.serve_forever()
 
