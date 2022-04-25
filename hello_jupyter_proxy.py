@@ -4,6 +4,7 @@ import argparse
 import socket
 import sys
 from copy import copy
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 __version__ = '0.1'
@@ -28,6 +29,12 @@ class RequestHandler(BaseHTTPRequestHandler):
         self.wfile.write(TEMPLATE.format(
             path=self.path, headers=self._headers_hide_cookie()
         ).encode('utf-8'))
+
+    def address_string(self):
+        # Overridden to fix logging when serving on Unix socket
+        if isinstance(self.client_address, str):
+            return self.client_address  # Unix sock
+        return super().address_string()
 
     def _headers_hide_cookie(self):
         # Not sure if there's any security risk in showing the Cookie value,
@@ -65,8 +72,11 @@ def main():
 
     # 127.0.0.1 = localhost: only accept connections from the same machine
     if args.port.isdigit():
+        print("TCP server on port", int(args.port))
         httpd = HTTPServer(('127.0.0.1', int(args.port)), RequestHandler)
     else:
+        print("Unix server at", repr(args.port))
+        Path(args.port).unlink(missing_ok=True)
         httpd = HTTPUnixServer(args.port, RequestHandler)
     print("Launching example HTTP server")
     httpd.serve_forever()
