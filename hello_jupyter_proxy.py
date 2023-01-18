@@ -14,8 +14,8 @@ __version__ = '0.1'
 # https://jupyter-server-proxy.readthedocs.io/en/latest/server-process.html
 def setup_hello():
     return {
-        'command': [sys.executable, '-m', 'hello_jupyter_proxy', '{port}'],
-        'unix': True,
+        'command': [sys.executable, '-m', 'hello_jupyter_proxy', '-u', '{unix_socket}'],
+        'unix_socket': True,
     }
 
 # Define a web application to proxy.
@@ -67,17 +67,18 @@ class HTTPUnixServer(HTTPServer):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('port')
+    ap.add_argument('-p', '--port')
+    ap.add_argument('-u', '--unix-socket')
     args = ap.parse_args()
 
     # 127.0.0.1 = localhost: only accept connections from the same machine
-    if args.port.isdigit():
-        print("TCP server on port", int(args.port))
-        httpd = HTTPServer(('127.0.0.1', int(args.port)), RequestHandler)
-    else:
-        print("Unix server at", repr(args.port))
+    if args.unix_socket:
+        print("Unix server at", repr(args.unix_socket))
         Path(args.port).unlink(missing_ok=True)
         httpd = HTTPUnixServer(args.port, RequestHandler)
+    else:
+        print("TCP server on port", int(args.port))
+        httpd = HTTPServer(('127.0.0.1', int(args.port)), RequestHandler)
     print("Launching example HTTP server")
     httpd.serve_forever()
 
