@@ -71,12 +71,12 @@ def main():
     ap.add_argument('-u', '--unix-socket')
     args = ap.parse_args()
 
-    # 127.0.0.1 = localhost: only accept connections from the same machine
     if args.unix_socket:
         print("Unix server at", repr(args.unix_socket))
         Path(args.port).unlink(missing_ok=True)
         httpd = HTTPUnixServer(args.port, RequestHandler)
     else:
+        # 127.0.0.1 = localhost: only accept connections from the same machine
         print("TCP server on port", int(args.port))
         httpd = HTTPServer(('127.0.0.1', int(args.port)), RequestHandler)
     print("Launching example HTTP server")
