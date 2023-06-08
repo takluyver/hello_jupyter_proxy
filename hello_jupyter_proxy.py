@@ -24,15 +24,21 @@ def setup_hello():
 # This example uses Python's low-level http.server, to minimise dependencies.
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
         server_addr = self.server.server_address
         if isinstance(server_addr, tuple):
             server_addr = "{}:{}".format(*server_addr)
-        self.wfile.write(TEMPLATE.format(
-            path=self.path, headers=self._headers_hide_cookie(),
-            server_address=server_addr,
-        ).encode('utf-8'))
+
+        try:
+            self.send_response(200)
+            self.end_headers()
+            self.wfile.write(TEMPLATE.format(
+                path=self.path, headers=self._headers_hide_cookie(),
+                server_address=server_addr,
+            ).encode('utf-8'))
+        except BrokenPipeError:
+            # Connection closed without the client reading the whole response.
+            # Not a problem for the server.
+            pass
 
     def address_string(self):
         # Overridden to fix logging when serving on Unix socket
