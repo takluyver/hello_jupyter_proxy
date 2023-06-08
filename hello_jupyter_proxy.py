@@ -73,8 +73,8 @@ def main():
 
     if args.unix_socket:
         print("Unix server at", repr(args.unix_socket))
-        Path(args.port).unlink(missing_ok=True)
-        httpd = HTTPUnixServer(args.port, RequestHandler)
+        Path(args.unix_socket).unlink(missing_ok=True)
+        httpd = HTTPUnixServer(args.unix_socket, RequestHandler)
     else:
         # 127.0.0.1 = localhost: only accept connections from the same machine
         print("TCP server on port", int(args.port))
