@@ -1,8 +1,10 @@
 """A minimal example server to run with jupyter-server-proxy
 """
 import argparse
+import socket
 import sys
 from copy import copy
+from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
 __version__ = '0.1'
@@ -12,7 +14,8 @@ __version__ = '0.1'
 # https://jupyter-server-proxy.readthedocs.io/en/latest/server-process.html
 def setup_hello():
     return {
-        'command': [sys.executable, '-m', 'hello_jupyter_proxy', '{port}']
+        'command': [sys.executable, '-m', 'hello_jupyter_proxy', '-u', '{unix_socket}'],
+        'unix_socket': True,
     }
 
 # Define a web application to proxy.
@@ -23,9 +26,19 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
+        server_addr = self.server.server_address
+        if isinstance(server_addr, tuple):
+            server_addr = "{}:{}".format(*server_addr)
         self.wfile.write(TEMPLATE.format(
-            path=self.path, headers=self._headers_hide_cookie()
+            path=self.path, headers=self._headers_hide_cookie(),
+            server_address=server_addr,
         ).encode('utf-8'))
+
+    def address_string(self):
+        # Overridden to fix logging when serving on Unix socket
+        if isinstance(self.client_address, str):
+            return self.client_address  # Unix sock
+        return super().address_string()
 
     def _headers_hide_cookie(self):
         # Not sure if there's any security risk in showing the Cookie value,
@@ -49,17 +62,28 @@ TEMPLATE = """\
 <p>Request path is <code>{path}</code></p>
 <p>Headers:</p>
 <pre>{headers}</pre>
+<p>Server is listening (behind the proxy) on <code>{server_address}</code>.</p>
 </body>
 </html>
 """
 
+class HTTPUnixServer(HTTPServer):
+    address_family = socket.AF_UNIX
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument('port', type=int)
+    ap.add_argument('-p', '--port')
+    ap.add_argument('-u', '--unix-socket')
     args = ap.parse_args()
 
-    # 127.0.0.1 = localhost: only accept connections from the same machine
-    httpd = HTTPServer(('127.0.0.1', args.port), RequestHandler)
+    if args.unix_socket:
+        print("Unix server at", repr(args.unix_socket))
+        Path(args.unix_socket).unlink(missing_ok=True)
+        httpd = HTTPUnixServer(args.unix_socket, RequestHandler)
+    else:
+        # 127.0.0.1 = localhost: only accept connections from the same machine
+        print("TCP server on port", int(args.port))
+        httpd = HTTPServer(('127.0.0.1', int(args.port)), RequestHandler)
     print("Launching example HTTP server")
     httpd.serve_forever()
 
