@@ -26,8 +26,12 @@ class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
+        server_addr = self.server.server_address
+        if isinstance(server_addr, tuple):
+            server_addr = "{}:{}".format(*server_addr)
         self.wfile.write(TEMPLATE.format(
-            path=self.path, headers=self._headers_hide_cookie()
+            path=self.path, headers=self._headers_hide_cookie(),
+            server_address=server_addr,
         ).encode('utf-8'))
 
     def address_string(self):
@@ -58,6 +62,7 @@ TEMPLATE = """\
 <p>Request path is <code>{path}</code></p>
 <p>Headers:</p>
 <pre>{headers}</pre>
+<p>Server is listening (behind the proxy) on <code>{server_address}</code>.</p>
 </body>
 </html>
 """
