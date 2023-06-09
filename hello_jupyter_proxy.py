@@ -7,12 +7,14 @@ from copy import copy
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 # This is the entry point for jupyter-server-proxy . The packaging metadata
 # tells it about this function. For details, see:
 # https://jupyter-server-proxy.readthedocs.io/en/latest/server-process.html
 def setup_hello():
+    # Using a Unix socket prevents other users on a multi-user system from accessing
+    # our server. The alternative is a TCP socket ('-p', '{port}').
     return {
         'command': [sys.executable, '-m', 'hello_jupyter_proxy', '-u', '{unix_socket}'],
         'unix_socket': True,
